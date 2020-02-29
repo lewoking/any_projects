@@ -1,3 +1,3 @@
-*.aproj linguist-language=Aardio
-*.py linguist-language=Aardio
-*.aardio linguist-language=Aardio
+*.aproj linguist-language=Go
+*.py linguist-language=Python
+*.aardio linguist-language=aardio
