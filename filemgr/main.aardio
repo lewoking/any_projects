@@ -33,7 +33,7 @@ mainForm.btnBrowse.oncommand = function(id,event){
 }
     
 mainForm.button.oncommand = function(id,event){
-	mainForm.edit3.text="复制文件ing"
+	mainForm.edit3.text="moving file"
 
 	fsys.enum( path, //目录
             	"*.*", //文件
@@ -43,7 +43,7 @@ mainForm.button.oncommand = function(id,event){
                     	filet=fsys.file(fullpath)
                     	tm = filet.getTime() ;//返回SystemTime格式时间( time 对象 )                   
                     	tb=tm.write.local(true);//显示文件创建时间 
-                    	
+                    	filet.close();
                     	tb.format="%Y-%m"
                     	tbs=tostring(tb)                 	
                     	 
@@ -58,7 +58,7 @@ mainForm.button.oncommand = function(id,event){
     							
     							pathd=fsys.joinpath(mainForm.txtFileOrFolderName.text,tbs)
     							fsys.createDir(pathd)
-								fsys.copy(fullpath,pathd)
+								fsys.move(fullpath,pathd)
 	  							}
     							}	
                     	}
