@@ -1,2 +1,3 @@
 *.aproj linguist-language=Aardio
 *.py linguist-language=Aardio
+*.aardio linguist-language=Aardio
