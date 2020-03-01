@@ -11,7 +11,8 @@ __pycache__/
 
 /.build
 
-
+Publish/
+.build/
 
 # Installer logs
 pip-log.txt
