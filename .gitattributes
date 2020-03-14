@@ -1,3 +1,3 @@
-*.aproj linguist-language=javascripts
+*.aproj linguist-language=xml
 *.py linguist-language=Python
-*.aardio linguist-language=aardio
+*.aardio linguist-language=javascripts
