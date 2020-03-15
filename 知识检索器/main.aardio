@@ -8,9 +8,10 @@ listbox={cls="listbox";left=22;top=89;right=798;bottom=258;ah=1;aw=1;edge=1;font
 static={cls="static";text="输入拼音首字母：";left=24;top=35;right=239;bottom=64;ah=1;align="right";aw=1;font=LOGFONT(h=-24);nWrap=1;transparent=1;z=2};
 static2={cls="static";text="By lea";left=674;top=543;right=721;bottom=560;ah=1;aw=1;font=LOGFONT(h=-15);transparent=1;z=4};
 txtFileOrFolderName={cls="edit";text="*.txt";left=566;top=33;right=725;bottom=64;ah=1;aw=1;edge=1;font=LOGFONT(h=-24);z=5};
-view={cls="static";text="浏览想要检索的的txt文件
+view={cls="static";text="浏览或直接拖放想要检索的的txt文件
 尽量按行读取
 输入简拼自动查找
+英文或数字检索需补空格
 单击列表预览";left=24;top=272;right=796;bottom=540;ah=1;aw=1;edge=1;font=LOGFONT(h=-24);notify=1;transparent=1;z=7}
 )
 /*}}*/
@@ -20,7 +21,7 @@ import fsys.dlg
 import string.conv.pinyin;
 //io.open();//打开控制台窗口
 
-hanzi = {"浏览或直接拖放想要检索的的txt文件";"尽量按行读取";"输入简拼自动查找";"英文或数字检索需补空格";"单击列表预览"}
+hanzi = {"浏览或直接拖放想要检索的的txt文件";"尽量按行读取";"输入简拼自动查找";"";"单击列表预览"}
 
 mainForm.input.oncommand = function(id,event){
 	  if(event == 0x400/*_EN_UPDATE*/ ){
