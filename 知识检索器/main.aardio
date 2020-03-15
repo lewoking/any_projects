@@ -20,7 +20,7 @@ import fsys.dlg
 import string.conv.pinyin;
 //io.open();//打开控制台窗口
 
-hanzi = {"浏览想要检索的的txt文件";"尽量按行读取";"输入简拼自动查找";"单击列表预览"}
+hanzi = {"浏览或直接拖放想要检索的的txt文件";"尽量按行读取";"输入简拼自动查找";"英文或数字检索需补空格";"单击列表预览"}
 
 mainForm.input.oncommand = function(id,event){
 	  if(event == 0x400/*_EN_UPDATE*/ ){
