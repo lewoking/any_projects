@@ -1,0 +1,33 @@
+import win.ui;
+/*DSG{{*/
+mainForm = win.form(text="          工作票班会";right=959;bottom=591;bgcolor=15335401;edge=1;frame=1;mode="popup")
+mainForm.add(
+datetimepick={cls="datetimepick";left=160;top=64;right=296;bottom=88;ah=1;aw=1;db=0.85;dl=0.17;dr=0.69;dt=0.11;edge=1;font=LOGFONT(h=-17);z=3};
+datetimepick2={cls="datetimepick";left=160;top=104;right=296;bottom=128;ah=1;aw=1;db=0.78;dl=0.17;dr=0.69;dt=0.18;edge=1;font=LOGFONT(h=-17);z=8};
+edit={cls="edit";text="09:00";left=296;top=64;right=408;bottom=88;ah=1;aw=1;db=0.85;dl=0.31;dr=0.57;dt=0.11;edge=1;font=LOGFONT(h=-17);z=2};
+edit2={cls="edit";text="09:00";left=296;top=104;right=408;bottom=128;ah=1;aw=1;db=0.78;dl=0.31;dr=0.57;dt=0.18;edge=1;font=LOGFONT(h=-17);z=7};
+radiobutton={cls="radiobutton";text="变电二种工作票";left=32;top=24;right=208;bottom=48;ah=1;aw=1;db=0.92;dl=0.03;dr=0.78;dt=0.04;font=LOGFONT(h=-17);z=4};
+radiobutton2={cls="radiobutton";text="电力监控工作票";left=216;top=24;right=408;bottom=48;ah=1;aw=1;db=0.92;dl=0.23;dr=0.57;dt=0.04;font=LOGFONT(h=-17);z=5};
+static={cls="static";text="工作开始时间";left=32;top=64;right=160;bottom=88;ah=1;align="center";aw=1;db=0.85;dl=0.03;dr=0.83;dt=0.11;font=LOGFONT(h=-17);notify=1;transparent=1;z=1};
+static2={cls="static";text="工作结束时间";left=32;top=104;right=160;bottom=128;ah=1;align="center";aw=1;db=0.78;dl=0.03;dr=0.83;dt=0.18;font=LOGFONT(h=-17);notify=1;transparent=1;z=6}
+)
+/*}}*/
+
+mainForm.static.oncommand = function(id,event){
+	
+}
+
+mainForm.radiobutton.oncommand = function(id,event){
+	
+}
+
+mainForm.edit.oncommand = function(id,event){
+	
+}
+
+mainForm.static2.oncommand = function(id,event){
+	
+}
+
+mainForm.show();
+return win.loopMessage();
