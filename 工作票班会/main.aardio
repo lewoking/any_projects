@@ -2,6 +2,7 @@ import win.ui;
 /*DSG{{*/
 mainForm = win.form(text="          工作票班会";right=935;bottom=591;bgcolor=15335401;edge=1;frame=1;mode="popup")
 mainForm.add(
+checkbox={cls="checkbox";text="无班前后会";left=544;top=24;right=672;bottom=48;ah=1;aw=1;db=0.92;dl=0.58;dr=0.28;dt=0.04;font=LOGFONT(h=-17);z=34};
 dateend={cls="datetimepick";left=608;top=344;right=744;bottom=368;ah=1;aw=1;db=0.38;dl=0.65;dr=0.21;dt=0.58;edge=1;font=LOGFONT(h=-17);z=8};
 datestart={cls="datetimepick";left=152;top=344;right=288;bottom=368;ah=1;aw=1;db=0.38;dl=0.16;dr=0.69;dt=0.58;edge=1;font=LOGFONT(h=-17);z=3};
 device={cls="static";text="设备双重名称";left=568;top=104;right=696;bottom=128;ah=1;align="center";aw=1;db=0.78;dl=0.61;dr=0.26;dt=0.18;font=LOGFONT(h=-17);notify=1;transparent=1;z=17};
@@ -17,14 +18,14 @@ edit9={cls="edit";text="2020050001";left=696;top=72;right=808;bottom=96;ah=1;aw=
 editend={cls="edit";text="18:00";left=744;top=344;right=856;bottom=368;ah=1;aw=1;db=0.38;dl=0.79;dr=0.09;dt=0.58;edge=1;font=LOGFONT(h=-17);z=7};
 editstart={cls="edit";text="09:00";left=288;top=344;right=400;bottom=368;ah=1;aw=1;db=0.38;dl=0.31;dr=0.57;dt=0.58;edge=1;font=LOGFONT(h=-17);z=2};
 enddate={cls="static";text="工作结束时间";left=480;top=344;right=608;bottom=368;ah=1;align="center";aw=1;db=0.38;dl=0.51;dr=0.35;dt=0.58;font=LOGFONT(h=-17);notify=1;transparent=1;z=6};
-export={cls="button";text="导出";left=824;top=24;right=872;bottom=48;font=LOGFONT(h=-17);z=32};
-listbox={cls="listbox";left=152;top=384;right=896;bottom=544;edge=1;items={};z=19};
+export={cls="button";text="导出";left=824;top=24;right=872;bottom=48;db=0.92;dl=0.88;dr=0.07;dt=0.04;font=LOGFONT(h=-17);z=32};
+listbox={cls="listbox";left=152;top=384;right=896;bottom=544;db=0.08;dl=0.16;dr=0.04;dt=0.65;edge=1;items={};z=19};
 location={cls="static";text="地点";left=288;top=104;right=416;bottom=128;ah=1;align="center";aw=1;db=0.78;dl=0.31;dr=0.56;dt=0.18;font=LOGFONT(h=-17);notify=1;transparent=1;z=15};
 master={cls="static";text="工作负责人";left=24;top=72;right=152;bottom=96;ah=1;align="center";aw=1;db=0.84;dl=0.03;dr=0.84;dt=0.12;font=LOGFONT(h=-17);notify=1;transparent=1;z=9};
-radiobutton={cls="radiobutton";text="变电二种工作票";left=24;top=24;right=200;bottom=48;ah=1;aw=1;db=0.92;dl=0.03;dr=0.79;dt=0.04;font=LOGFONT(h=-17);z=4};
-radiobutton2={cls="radiobutton";text="电力监控工作票";left=208;top=24;right=400;bottom=48;ah=1;aw=1;db=0.92;dl=0.22;dr=0.57;dt=0.04;font=LOGFONT(h=-17);z=5};
-save={cls="button";text="保存";left=696;top=24;right=744;bottom=48;font=LOGFONT(h=-17);z=31};
-search={cls="button";text="查询";left=824;top=72;right=872;bottom=96;font=LOGFONT(h=-17);z=30};
+radiobutton={cls="radiobutton";text="变电二种工作票";left=152;top=24;right=328;bottom=48;ah=1;aw=1;db=0.92;dl=0.16;dr=0.65;dt=0.04;font=LOGFONT(h=-17);z=4};
+radiobutton2={cls="radiobutton";text="电力监控工作票";left=336;top=24;right=528;bottom=48;ah=1;aw=1;db=0.92;dl=0.36;dr=0.44;dt=0.04;font=LOGFONT(h=-17);z=5};
+save={cls="button";text="保存";left=696;top=24;right=744;bottom=48;db=0.92;dl=0.74;dr=0.21;dt=0.04;font=LOGFONT(h=-17);z=31};
+search={cls="button";text="查询";left=824;top=72;right=872;bottom=96;db=0.84;dl=0.88;dr=0.07;dt=0.12;font=LOGFONT(h=-17);z=30};
 startdate={cls="static";text="工作开始时间";left=24;top=344;right=152;bottom=368;ah=1;align="center";aw=1;db=0.38;dl=0.03;dr=0.84;dt=0.58;font=LOGFONT(h=-17);notify=1;transparent=1;z=1};
 static={cls="static";text="工作内容";left=24;top=144;right=152;bottom=168;ah=1;align="center";aw=1;db=0.72;dl=0.03;dr=0.84;dt=0.24;font=LOGFONT(h=-17);notify=1;transparent=1;z=11};
 static2={cls="static";text="注意事项";left=24;top=384;right=152;bottom=408;ah=1;align="center";aw=1;db=0.31;dl=0.03;dr=0.84;dt=0.65;font=LOGFONT(h=-17);notify=1;transparent=1;z=20};
@@ -33,6 +34,7 @@ static4={cls="static";text="现场危险点分析";left=24;top=264;right=152;bot
 static5={cls="static";text="工作签发人";left=288;top=72;right=416;bottom=96;ah=1;align="center";aw=1;db=0.84;dl=0.31;dr=0.56;dt=0.12;font=LOGFONT(h=-17);notify=1;transparent=1;z=25};
 static6={cls="static";text="By    lea";left=776;top=560;right=904;bottom=584;ah=1;align="center";aw=1;db=0.01;dl=0.83;dr=0.03;dt=0.95;font=LOGFONT(h=-17);notify=1;transparent=1;z=27};
 static7={cls="static";text="工作票号";left=568;top=72;right=696;bottom=96;ah=1;align="center";aw=1;db=0.84;dl=0.61;dr=0.26;dt=0.12;font=LOGFONT(h=-17);notify=1;transparent=1;z=28};
+static8={cls="static";text="票类型";left=24;top=24;right=152;bottom=48;ah=1;align="center";aw=1;db=0.92;dl=0.03;dr=0.84;dt=0.04;font=LOGFONT(h=-17);notify=1;transparent=1;z=33};
 station={cls="static";text="厂站";left=24;top=104;right=152;bottom=128;ah=1;align="center";aw=1;db=0.78;dl=0.03;dr=0.84;dt=0.18;font=LOGFONT(h=-17);notify=1;transparent=1;z=13}
 )
 /*}}*/
