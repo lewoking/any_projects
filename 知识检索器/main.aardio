@@ -11,8 +11,8 @@ txtFileOrFolderName={cls="edit";text="*.txt";left=566;top=33;right=725;bottom=64
 view={cls="static";text="浏览或直接拖放想要检索的的txt文件
 尽量按行读取
 输入简拼自动查找
-英文或数字检索需补空格
-单击列表预览";left=24;top=272;right=796;bottom=540;ah=1;aw=1;edge=1;font=LOGFONT(h=-24);notify=1;transparent=1;z=7}
+注意不智能区分多音字
+单击列表预览结果";left=24;top=272;right=796;bottom=540;ah=1;aw=1;edge=1;font=LOGFONT(h=-24);notify=1;transparent=1;z=7}
 )
 /*}}*/
 
@@ -58,6 +58,7 @@ function review(){
      		try{ 
      		
      		jp = tostring(string.replace(pinyin,"(\w)\w+\s*","\1"))
+                jp = string.replace(jp,"\s","")
 
      		i,j = string.find(jp,mainForm.input.text)
 			if (i) {
