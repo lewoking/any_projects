@@ -1,9 +1,9 @@
-#Persistent ; ÈÃ½Å±¾³ÖĞøÔËĞĞ
+#Persistent ; è®©è„šæœ¬æŒç»­è¿è¡Œ
 OnClipboardChange("ClipChanged")
 loop,3
 {
-  clipboard := "ÊÔ¿´¿´"
-  msgbox, µÚ%a_index%´Î²Ù×÷Íê³É£¡
+  clipboard := "è¯•çœ‹çœ‹"
+  msgbox, ç¬¬%a_index%æ¬¡æ“ä½œå®Œæˆï¼
 }
 return
 ClipChanged(clip_type) {    
@@ -19,12 +19,12 @@ ClipChanged(clip_type) {
      {
     MsgBox, The value is %OutputVar%.ture
     Sleep 1000
-    ToolTip  ; ¹Ø±Õ¹¤¾ßÌáÊ¾.
+    ToolTip  ; å…³é—­å·¥å…·æç¤º.
     Sleep 1000
-   clipboard :=  OutputVar  ; ÔÚ¼ôÌù°åÖĞ´æÈëĞÂÄÚÈİ.
+   clipboard :=  OutputVar  ; åœ¨å‰ªè´´æ¿ä¸­å­˜å…¥æ–°å†…å®¹.
    Sleep 1000
   MsgBox,sleep
     }
 }
 
-#x::ExitApp  ; Éè¶¨ÈÈ¼üÀ´ÖÕÖ¹µ±Ç°½Å±¾
+#x::ExitApp  ; è®¾å®šçƒ­é”®æ¥ç»ˆæ­¢å½“å‰è„šæœ¬
