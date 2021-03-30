@@ -2,12 +2,12 @@ import win.ui;
 /*DSG{{*/
 mainForm = win.form(text="知识检索器";right=824;bottom=567;acceptfiles=1)
 mainForm.add(
-button={cls="button";text="浏览...";left=737;top=32;right=808;bottom=66;ah=1;aw=1;font=LOGFONT(h=-24);z=6};
-input={cls="edit";left=245;top=35;right=540;bottom=64;ah=1;align="center";aw=1;edge=1;font=LOGFONT(h=-24);tabstop=1;z=1};
+button={cls="button";text="浏览...";left=737;top=28;right=808;bottom=66;ah=1;aw=1;font=LOGFONT(h=-15);valign="bottom";z=6};
+input={cls="edit";left=245;top=32;right=540;bottom=72;ah=1;align="center";aw=1;edge=1;font=LOGFONT(h=-24);tabstop=1;z=1};
 listbox={cls="listbox";left=22;top=89;right=798;bottom=258;ah=1;aw=1;edge=1;font=LOGFONT(h=-24);items={};tabstop=1;z=3};
-static={cls="static";text="输入拼音首字母：";left=24;top=35;right=239;bottom=64;ah=1;align="right";aw=1;font=LOGFONT(h=-24);nWrap=1;transparent=1;z=2};
+static={cls="static";text="输入拼音首字母：";left=24;top=32;right=239;bottom=72;ah=1;align="right";aw=1;font=LOGFONT(h=-24);nWrap=1;transparent=1;z=2};
 static2={cls="static";text="By lea";left=674;top=543;right=721;bottom=560;ah=1;aw=1;font=LOGFONT(h=-15);transparent=1;z=4};
-txtFileOrFolderName={cls="edit";text="*.txt";left=566;top=33;right=725;bottom=64;ah=1;aw=1;edge=1;font=LOGFONT(h=-24);z=5};
+txtFileOrFolderName={cls="edit";text="*.txt";left=566;top=30;right=725;bottom=72;ah=1;aw=1;edge=1;font=LOGFONT(h=-24);multiline=1;z=5};
 view={cls="static";text="浏览或直接拖放想要检索的的txt文件
 尽量按行读取
 输入简拼自动查找
@@ -21,7 +21,7 @@ import fsys.dlg
 import string.conv.pinyin;
 //io.open();//打开控制台窗口
 
-hanzi = {"浏览或直接拖放想要检索的的txt文件";"尽量按行读取";"输入简拼自动查找";"";"单击列表预览"}
+hanzi = {"浏览或直接拖放想要检索的txt文件";"尽量按行读取";"输入简拼自动查找";"单击列表预览"}
 
 mainForm.input.oncommand = function(id,event){
 	  if(event == 0x400/*_EN_UPDATE*/ ){
@@ -53,9 +53,12 @@ function review(){
     		mainForm.listbox.clear()
 		for name,value in hanzi{
 			pinyin = string.conv.pinyin(value)
-			
-
-     		try{ 
+			try{ 
+                i,j = string.find(value,mainForm.input.text)
+			if (i) {
+     			mainForm.listbox.add(value)//赋值到列表
+            }else {
+            try{ 
      		
      		jp = tostring(string.replace(pinyin,"(\w)\w+\s*","\1"))
             jp = string.replace(jp,"\s","")
@@ -67,12 +70,17 @@ function review(){
 
      			mainForm.listbox.add(value)//赋值到列表
      
+            }
+            
+     		}
+     		
      		}
 
     
-}     		
+}     	
 }	
 }
+	
 
 function readtxt(){
     		for line in io.lines(mainForm.txtFileOrFolderName.text) {
@@ -105,6 +113,14 @@ mainForm.onDropFiles = function(files){
 	mainForm.txtFileOrFolderName.text=files[1]
 	readtxt()
 	review()
+}
+/*监视剪贴板，当有新内容时加入listbox*/
+import win.clip.viewer;
+viewer = win.clip.viewer(mainForm);
+viewer.onDrawClipboard=function(){
+        var str = win.clip.read();
+        mainForm.input.text = str;
+
 }
 
 mainForm.show(true);
