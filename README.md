@@ -7,7 +7,7 @@
     突然有一天,某人说“有没有安卓版的呀？”
     我沉默了一下说没有,
     然后,其实可以有
-[js拼音](https://bear4.ml/edl/trojan/pinyinjs/)
+[x][js拼音](https://bear4.ml/edl/trojan/pinyinjs/)
 # ~~工作票辅助~~
    ~~放弃C端开发~~，已转B/S
     
