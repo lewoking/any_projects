@@ -5,9 +5,10 @@
 
 
 #show: ori.with(
-  title: "文档标题",
+  title: "文档标题文档标题文档标题文档标题文档标题文档",
   author: "张三",
-  subject: "Ori in Typst",
+  subject: "GB/2312",
+  unit: "国XXX公司XX部门",
   date: datetime.today(),
   maketitle: true, // 开启标题页
   makeoutline: true, // 开启目录
@@ -30,7 +31,7 @@
     title: "文档标题",
     author: "张三",
     subject: "Ori in Typst",
-    semester: "2025 春",
+    unit: "2025 春",
     date: datetime.today(),
   )
   ```

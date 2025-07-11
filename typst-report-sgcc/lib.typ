@@ -21,6 +21,32 @@
 #let argmax = math.op("argmax", limits: true)
 #let argmin = math.op("argmin", limits: true)
 
+#let _info_key(body) = {
+  rect(width: 100%, inset: 2pt, 
+    stroke: none,
+    text(
+      font: default-font.main,
+      size: 16pt,
+      body
+  ))
+}
+
+#let _info_value(body) = {
+  rect(
+    width: 100%,
+    inset: 2pt,
+    stroke: (
+      bottom: 1pt + black
+    ),
+    text(
+      font: default-font.main,
+      size: 16pt,
+      bottom-edge: "descender"
+    )[
+      #body
+    ]
+  ) 
+}
 
 /// 模板的核心类，规范了文档的格式。
 /// - media (string): 媒体类型，可选值为 `"screen"` 和 `"print"`。默认为 `"print"`。
@@ -29,8 +55,8 @@
 /// - screen-size (length): 屏幕字体大小。默认为 `11pt`。
 /// - title (string): 文档的标题。
 /// - author (string): 作者。
-/// - subject (string): 课程名。
-/// - semester (string): 学期。
+/// - subject (string): 页眉。
+/// - unit (string): 单位。
 /// - date (datetime): 时间。
 /// - font (object): 字体。默认为 `default-font`。如果你想使用不同的字体，可以传入一个字典，包含 `main`、`mono`、`cjk`、`math` 和 `math-cjk` 字段。
 /// - lang (string): 语言。默认为 `zh`。
@@ -45,7 +71,7 @@
   title: none,
   author: none,
   subject: none,
-  semester: none,
+  unit: none,
   date: none,
   font: default-font,
   lang: "zh",
@@ -145,16 +171,40 @@
   /// 基础设置。
   set document(title: title, author: if type(author) == str { author } else { () }, date: date)
 
+
+
   /// 标题页。
   if maketitle {
     // Title page
-    align(center + top)[
-      #v(20%)
-      #text(2em, weight: 500, subject)
-      #v(2em, weak: true)
-      #text(2em, weight: 500, title)
-      #v(2em, weak: true)
-      #author
+    [
+      #align(center + top)[
+        #v(2em)
+        #text(3.5em, weight: 500, title)
+      ]
+
+      #v(18em)
+      #align(center)[
+        #grid(
+          columns: (70pt, 180pt),
+          rows: (40pt, 40pt),
+          gutter: 3pt,
+          _info_key("编制："),
+          _info_value(author),
+          _info_key("审核："),
+          _info_value("   "),
+          _info_key("批准："),
+          _info_value("   ")
+        )
+      ]
+
+      #block(height: 5%, [])  // 用于撑开空间实现下部对齐
+
+      #align(center + bottom)[
+        #text(2em, weight: 500, unit)
+        #v(0em)
+        #text(2em, weight: 500, date.display("[year]年[month]月"))
+        #v(0em)
+      ]
     ]
     pagebreak(weak: true)
   }
