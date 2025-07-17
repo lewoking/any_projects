@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-
+.DS_*
 
 # Distribution / packaging
 .Python

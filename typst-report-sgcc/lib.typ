@@ -7,12 +7,12 @@
 #let md = cmarker-render.with(math: mitex)
 
 #let default-font = (
-  main: "FangSong_GB2312",
-  mono: "FangSong_GB2312",
-  cjk: "Microsoft Sans Serif",
-  emph-cjk: "KaiTi SC",
+  main: "STFangSong",
+  mono: "Courier New",
+  cjk: "STFangSong",
+  emph-cjk: "STKaiti",
   math: "New Computer Modern Math",
-  math-cjk: "Microsoft Sans Serif",
+  math-cjk: "STFangSong",
 )
 
 // Definitions for math
@@ -22,12 +22,10 @@
 #let argmin = math.op("argmin", limits: true)
 
 #let _info_key(body) = {
-  rect(width: 100%, inset: 2pt, 
-    stroke: none,
-    text(
-      font: default-font.main,
-      size: 16pt,
-      body
+  rect(width: 100%, inset: 2pt, stroke: none, text(
+    font: default-font.main,
+    size: 16pt,
+    body,
   ))
 }
 
@@ -36,16 +34,30 @@
     width: 100%,
     inset: 2pt,
     stroke: (
-      bottom: 1pt + black
+      bottom: 1pt + black,
     ),
     text(
       font: default-font.main,
       size: 16pt,
-      bottom-edge: "descender"
+      bottom-edge: "descender",
     )[
       #body
-    ]
-  ) 
+    ],
+  )
+}
+#let get-week-number(date) = {
+  // 获取年份第一天
+  let year-start = datetime(
+    year: date.year(),
+    month: 1,
+    day: 1,
+  )
+
+  // 计算从年初到当前日期的天数
+  let days = date.ord() - year-start.ord()
+
+  // 计算周数（向上取整）
+  calc.ceil((days + 1) / 7)
 }
 
 /// 模板的核心类，规范了文档的格式。
@@ -108,14 +120,11 @@
   }
 
   /// 设置段落样式。
-  set par(
-    justify: true,
-    first-line-indent: if first-line-indent == auto {
-      (amount: 2em, all: true)
-    } else {
-      first-line-indent
-    },
-  )
+  set par(justify: true, first-line-indent: if first-line-indent == auto {
+    (amount: 2em, all: true)
+  } else {
+    first-line-indent
+  })
 
   /// 设置标题样式。
   show heading: it => {
@@ -172,14 +181,13 @@
   set document(title: title, author: if type(author) == str { author } else { () }, date: date)
 
 
-
   /// 标题页。
   if maketitle {
     // Title page
     [
       #align(center + top)[
         #v(2em)
-        #text(3.5em, weight: 500, title)
+        #text(3.5em, weight: 700, title)
       ]
 
       #v(18em)
@@ -188,12 +196,9 @@
           columns: (70pt, 180pt),
           rows: (40pt, 40pt),
           gutter: 3pt,
-          _info_key("编制："),
-          _info_value(author),
-          _info_key("审核："),
-          _info_value("   "),
-          _info_key("批准："),
-          _info_value("   ")
+          _info_key("编制："), _info_value(author),
+          _info_key("审核："), _info_value("   "),
+          _info_key("批准："), _info_value("   "),
         )
       ]
 
@@ -211,6 +216,56 @@
 
   /// 目录。
   if makeoutline {
+    [
+      // Logo和抬头
+      #grid(
+        columns: (auto, auto),
+        gutter: 2em,
+        align(left)[#image("assets/logo.png", height: 3em)],
+      )
+
+      // 红色文件标题
+      #align(center)[
+        #text(
+          font: "STKaiti",
+          size: 2em,
+          weight: "bold",
+          fill: rgb("#de2910"),
+          title,
+        )
+      ]
+
+      // 文号和日期
+      #grid(
+        columns: 1fr,
+        align(center)[
+          #text(
+            font: "STFangSong",
+            size: 1.2em,
+            weight: "bold",
+            subject,
+          )
+        ],
+        v(1em),
+        grid(
+          columns: (auto, 1fr),
+          column-gutter: 8em,
+          align(left)[
+            #text(font: "STFangSong", unit)
+          ],
+          align(right)[
+            #text(
+              font: "STFangSong",
+              "时间：" + date.display("[year]年[month]月[day]日"),
+            )
+          ],
+        )
+      )
+
+      // 装饰线
+      #line(length: 100%, stroke: 1pt + rgb("#006e45"))
+      #v(2em)
+    ]
     show heading: align.with(center)
     show outline.entry: set block(spacing: 1.2em)
 
@@ -225,13 +280,13 @@
   set page(
     paper: "a4",
     header: context {
-    let num = counter(page).get().first()
-    if calc.even(num) {
-      align(left, subject)
-    } else {
-      align(right,  subject)
-    }
-  },
+      let num = counter(page).get().first()
+      if calc.even(num) {
+        align(left, subject)
+      } else {
+        align(right, subject)
+      }
+    },
     fill: bg-color,
     numbering: "1",
     margin: page-margin,
