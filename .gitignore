@@ -3,8 +3,47 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-.DS_*
+
 *.pdf
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# 编辑器/IDE
+.idea/
+.vscode/
+*.sublime-*
+
+# 日志/调试
+*.log
+npm-debug.log*
+
+# 密钥/配置
+*.pem
+*.key
+*.crt
+*.p12
+*.env
+.env.*
+config.yaml
+*.sqlite*
+*.bak
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Node.js
+node_modules/
+
+# 构建产物
+dist/
+build/
+*.exe
+*.out
 
 # Distribution / packaging
 .Python
