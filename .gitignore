@@ -3,7 +3,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-
 *.pdf
 # macOS
 .DS_Store
@@ -11,6 +10,7 @@ __pycache__/
 .LSOverride
 Icon?
 ._*
+Thumbs.db
 
 # 编辑器/IDE
 .idea/
@@ -31,6 +31,28 @@ npm-debug.log*
 config.yaml
 *.sqlite*
 *.bak
+
+# ========== 隐私 / 内部业务数据（禁止入库） ==========
+# 办公文档与表格，常含厂站、设备、人员等内部信息
+*.xlsx
+*.xls
+*.xlsm
+*.xlsb
+*.doc
+*.docx
+*.ppt
+*.pptx
+
+# CSV 只允许空表头模板；带真实数据的 sample/导出表一律忽略
+*.csv
+!**/template.csv
+
+# 原始数据文件名、系统截图（可能含内网界面与真实厂站）
+**/源.*
+DCinput/*.png
+DCinput/*.jpg
+DCinput/*.jpeg
+DCinput/*.webp
 
 # Python
 __pycache__/
