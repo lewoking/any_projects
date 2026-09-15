@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         调控云录入助手
 // @namespace    dcinput
-// @version      1.1.0
-// @description  ExtJS 通用录入：文本/数字/日期/本地下拉/搜索选择按控件类型填；CSV 列名=网页 name。
+// @version      1.3.0
+// @description  ExtJS 通用录入：文本/数字/日期/本地下拉/搜索选择按控件类型填；CSV 列名匹配网页 name 或显示 label。
 // @author       dcinput
 // @include      http://10.42.2.*/*
 // @include      http://10.42.2.*
@@ -22,7 +22,7 @@
   if (window.__dcinputLoaded) return;
   window.__dcinputLoaded = true;
 
-  var VERSION = '1.1.0';
+  var VERSION = '1.3.0';
   var NS = 'dcinput';
 
   var state = {
@@ -227,6 +227,19 @@
   function isSheetMeta(name) {
     return /^(序号|备注|说明|编号)$/.test(String(name || ''));
   }
+  /* 页面 label 含图标、* 必填、冒号；录入表头一般是干净中文 */
+  function formatLabel(s) {
+    return String(s == null ? '' : s)
+      .replace(/[\u200b-\u200d\ufeff]/g, '')
+      .replace(/<[^>]*>/g, '')
+      .replace(/[\s\u00a0\u3000]+/g, '')
+      .replace(/[（(]必填项[)）]/g, '')
+      .replace(/[*＊★●·]/g, '')
+      .replace(/^[：:]+|[：:]+$/g, '');
+  }
+  function normalizeKey(s) {
+    return formatLabel(s).toLowerCase();
+  }
   function previewName(row) {
     if (!row) return '（未导入）';
     var keys = row._keys || [];
@@ -317,6 +330,58 @@
     }
     return null;
   }
+  function closestFieldItem(el) {
+    var n = el;
+    var hops = 0;
+    while (n && hops < 12) {
+      if (n.className && /\bx-field\b|\bx-form-item\b/.test(String(n.className))) return n;
+      n = n.parentElement;
+      hops++;
+    }
+    return null;
+  }
+  function rawLabelOf(el, cmp) {
+    var t = '';
+    if (cmp) {
+      try { if (cmp.fieldLabel) t = String(cmp.fieldLabel); } catch (e) {}
+    }
+    if (t) return t;
+    if (!el) return '';
+    var id = el.id || '';
+    var base = id.slice(-8) === '-inputEl' ? id.slice(0, -8) : id;
+    var doc = el.ownerDocument;
+    var lab = null;
+    try { if (doc && base) lab = doc.getElementById(base + '-labelEl'); } catch (e1) {}
+    if (!lab) {
+      var item = closestFieldItem(el);
+      if (item) lab = item.querySelector('.x-form-item-label, label');
+    }
+    if (!lab && el.labels && el.labels.length) lab = el.labels[0];
+    if (!lab) return '';
+    return String(lab.innerText || lab.textContent || '');
+  }
+  function labelOfEl(el) {
+    if (!el) return '';
+    var t = rawLabelOf(el, null);
+    if (t) return t;
+    var doc = el.ownerDocument;
+    var Ext = winExt(doc && doc.defaultView);
+    return rawLabelOf(el, cmpFromEl(Ext, el));
+  }
+  function fieldMatchKeys(el) {
+    var out = [];
+    var n = el && el.name;
+    if (n) {
+      uniquePush(out, n);
+      uniquePush(out, normalizeKey(n));
+    }
+    var lab = formatLabel(labelOfEl(el));
+    if (lab) {
+      uniquePush(out, lab);
+      uniquePush(out, normalizeKey(lab));
+    }
+    return out;
+  }
   function windowTitle(winEl) {
     if (!winEl) return '';
     var titleEl = winEl.querySelector('.x-window-header-text, .x-title-text, .x-header-text');
@@ -335,21 +400,28 @@
     var row = state.rows[state.index];
     var keys = (row && row._keys) || [];
     var set = {};
-    var i, k;
+    var i, k, nk;
     for (i = 0; i < keys.length; i++) {
       k = keys[i];
       if (!k || k.charAt(0) === '_' || isSheetMeta(k)) continue;
       set[k] = 1;
+      nk = normalizeKey(k);
+      if (nk) set[nk] = 1;
     }
     return set;
   }
   function overlapCount(els, nameSet) {
-    var n = 0, i, name, seen = {};
+    var n = 0, i, keys, k, token, seen = {};
     for (i = 0; i < els.length; i++) {
-      name = els[i].name;
-      if (name && nameSet[name] && !seen[name]) {
-        seen[name] = 1;
-        n++;
+      token = (els[i].name || '') + '\0' + (els[i].id || '');
+      if (seen[token]) continue;
+      keys = fieldMatchKeys(els[i]);
+      for (k = 0; k < keys.length; k++) {
+        if (keys[k] && nameSet[keys[k]]) {
+          seen[token] = 1;
+          n++;
+          break;
+        }
       }
     }
     return n;
@@ -528,26 +600,39 @@
     return list[0];
   }
 
-  /* ---------- find by name（当前弹窗分组，避开列表搜索框） ---------- */
-  function findByName(doc, name) {
-    if (!doc || !name) return null;
-    var els = listDetailInputs(doc);
+  /* ---------- find by name / label（当前弹窗分组，避开列表搜索框） ---------- */
+  function pickNamed(els, pred) {
     var i, el, other = null;
     for (i = 0; i < els.length; i++) {
       el = els[i];
-      if (el.name !== name) continue;
-      if (isTableFieldId(el.id)) return el;
-      if (!other) other = el;
-    }
-    if (other) return other;
-    els = inputsIn(doc);
-    for (i = 0; i < els.length; i++) {
-      el = els[i];
-      if (el.name !== name) continue;
+      if (!pred(el)) continue;
       if (isTableFieldId(el.id)) return el;
       if (!other) other = el;
     }
     return other;
+  }
+  function findByName(doc, name) {
+    if (!doc || !name) return null;
+    function pred(el) { return el.name === name; }
+    return pickNamed(listDetailInputs(doc), pred) || pickNamed(inputsIn(doc), pred);
+  }
+  function findByNameCI(doc, name) {
+    var want = String(name || '').toLowerCase();
+    if (!want) return null;
+    function pred(el) { return String(el.name || '').toLowerCase() === want; }
+    return pickNamed(listDetailInputs(doc), pred) || pickNamed(inputsIn(doc), pred);
+  }
+  function findByLabel(doc, key) {
+    var want = normalizeKey(key);
+    if (!want) return null;
+    function pred(el) {
+      var lab = normalizeKey(labelOfEl(el));
+      return !!(lab && lab === want);
+    }
+    return pickNamed(listDetailInputs(doc), pred) || pickNamed(inputsIn(doc), pred);
+  }
+  function findField(doc, key) {
+    return findByName(doc, key) || findByNameCI(doc, key) || findByLabel(doc, key);
   }
   function cmpXType(cmp) {
     if (!cmp) return '';
@@ -569,7 +654,7 @@
     return false;
   }
   function looksLikeDateName(el, cmp) {
-    var s = ((el && el.name) || '') + ' ' + ((el && el.id) || '') + ' ' + ((cmp && cmp.name) || '');
+    var s = ((el && el.name) || '') + ' ' + ((el && el.id) || '') + ' ' + ((cmp && cmp.name) || '') + ' ' + formatLabel(labelOfEl(el));
     return /日期|DATE|PERIOD|_DT($|[^A-Z])/i.test(s);
   }
   /* ExtJS 常用控件：text / textarea / number / date / combo / lookup / checkbox / radio / select / readonly */
@@ -1035,29 +1120,33 @@
     var missing = [];
     var failed = [];
     var kinds = {};
-    var i, name, val, el, cmp, kind, ok;
+    var i, name, val, el, cmp, kind, ok, shown, uid, used = {};
     for (i = 0; i < keys.length; i++) {
       name = keys[i];
       if (!name || name.charAt(0) === '_' || isSheetMeta(name)) continue;
       val = coerceValue(row[name]);
       if (!val) continue;
-      el = findByName(holder.doc, name);
+      el = findField(holder.doc, name);
       if (!el) { missing.push(name); continue; }
-      cmp = cmpFromEl(Ext, el) || cmpByName(Ext, name);
+      uid = (el.id || '') + '\0' + (el.name || '');
+      if (used[uid]) continue;
+      used[uid] = 1;
+      cmp = cmpFromEl(Ext, el) || cmpByName(Ext, el.name || name);
       kind = classifyField(el, cmp);
       kinds[name] = kind;
+      shown = formatLabel(labelOfEl(el)) || name;
       if (kind === 'skip' || kind === 'readonly') continue;
       ok = tryWrite(el, cmp, val);
       if (kind === 'lookup' || isPicker(el, cmp)) {
         if (!ok) tryWriteRaw(el, cmp, val);
         auto.push(name);
-        needHuman.push({ name: name, value: val, kind: kind });
+        needHuman.push({ name: name, shown: shown, value: val, kind: kind, el: el, cmp: cmp });
       } else if (ok) auto.push(name);
       else failed.push(name);
     }
     state.lastFingerprint = formFingerprint(holder.doc);
     state.queryStatus = needHuman.map(function (q) {
-      return { name: q.name, hint: q.value, waiting: false, found: true, kind: q.kind };
+      return { name: q.shown || q.name, hint: q.value, waiting: false, found: true, kind: q.kind };
     });
     console.log('[dcinput] fill', {
       fingerprint: state.lastFingerprint,
@@ -1177,7 +1266,7 @@
       }
       var q = queue[idx];
       if (state.queryStatus[idx]) state.queryStatus[idx].waiting = true;
-      setStatus('请选择「' + q.name + '」（' + (idx + 1) + '/' + queue.length + '）对照：' + (q.value || ''));
+      setStatus('请选择「' + (q.shown || q.name) + '」（' + (idx + 1) + '/' + queue.length + '）对照：' + (q.value || ''));
       renderPanel();
       if (q.kind === 'combo') {
         tryWriteCombo(q.el, q.cmp, q.value, true);
@@ -1260,7 +1349,7 @@
       el = nodes[i];
       if (!el.name) continue;
       if (isSearchField(el)) continue;
-      out.push({ name: el.name, id: el.id || '', placeholder: el.placeholder || '', picker: isPicker(el, null), kind: classifyField(el, null) });
+      out.push({ name: el.name, id: el.id || '', label: formatLabel(labelOfEl(el)), placeholder: el.placeholder || '', picker: isPicker(el, null), kind: classifyField(el, null) });
     }
     return out;
   }
@@ -1273,7 +1362,7 @@
     }
     return all;
   }
-  function copyPageNames() {
+  function collectPageFields() {
     var docs = walkDocuments();
     var names = [];
     var d, els, e;
@@ -1281,7 +1370,7 @@
       if (!docs[d].doc) continue;
       els = listDetailInputs(docs[d].doc);
       for (e = 0; e < els.length; e++) {
-        names.push({ name: els[e].name, id: els[e].id || '' });
+        names.push({ name: els[e].name, id: els[e].id || '', label: formatLabel(labelOfEl(els[e])) });
       }
     }
     if (!names.length) names = listPageNames();
@@ -1290,21 +1379,128 @@
       use = names.filter(function (n) { return n.name && !/^common_(tree_)?search/.test(n.name); });
     }
     if (!use.length) use = names;
-    var header = [];
+    var fields = [];
     var seen = {};
-    var i, n;
+    var i, n, lab;
     for (i = 0; i < use.length; i++) {
       n = use[i].name;
-      if (!n || seen[n]) continue;
+      lab = use[i].label || n;
+      if (!n) continue;
+      if (seen[n] || (lab && seen[lab])) continue;
       seen[n] = 1;
-      header.push(n);
+      if (lab) seen[lab] = 1;
+      fields.push({ name: n, label: lab, id: use[i].id || '' });
     }
-    var text = header.join(',');
+    return fields;
+  }
+  function csvCell(v) {
+    var s = String(v == null ? '' : v);
+    if (/[",\r\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+  function csvLine(cells) {
+    var i, out = [];
+    for (i = 0; i < cells.length; i++) out.push(csvCell(cells[i]));
+    return out.join(',');
+  }
+  function fieldsToTemplateCsv(fields) {
+    var names = [];
+    var labels = [];
+    var i;
+    for (i = 0; i < fields.length; i++) {
+      names.push(fields[i].name);
+      labels.push(fields[i].label || fields[i].name);
+    }
+    return csvLine(names) + '\r\n' + csvLine(labels) + '\r\n';
+  }
+  function templateFileName(fields) {
+    var i, pref;
+    for (i = 0; i < fields.length; i++) {
+      pref = tablePrefix(fields[i].id);
+      if (pref) return '录入模版-' + pref + '.csv';
+    }
+    return '录入模版.csv';
+  }
+  function downloadCsv(filename, text) {
+    var blob = new Blob(['\uFEFF' + text], { type: 'text/csv;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename || '录入模版.csv';
+    a.rel = 'noopener';
+    document.documentElement.appendChild(a);
+    a.click();
+    setTimeout(function () {
+      try { if (a.parentNode) a.parentNode.removeChild(a); } catch (e) {}
+      try { URL.revokeObjectURL(url); } catch (e2) {}
+    }, 1500);
+  }
+  function closeHeaderDlg() {
+    var m = $('dcinput-hdr-mask');
+    if (m && m.parentNode) m.parentNode.removeChild(m);
+  }
+  function showHeaderDlg(fields) {
+    closeHeaderDlg();
+    ensureStyle();
+    var csvText = fieldsToTemplateCsv(fields);
+    var filename = templateFileName(fields);
+    var mask = document.createElement('div');
+    mask.id = 'dcinput-hdr-mask';
+    mask.innerHTML = [
+      '<div id="dcinput-hdr-dlg" role="dialog">',
+      '<h2>本页表头</h2>',
+      '<p class="dc-hdr-hint">标题行 = name，第一行 = label。导出 CSV 模版后从第三行起填数据。</p>',
+      '<textarea id="dcinput-hdr-text" readonly></textarea>',
+      '<div class="dc-hdr-btns">',
+      '<button type="button" id="dcinput-hdr-copy">复制</button>',
+      '<button type="button" id="dcinput-hdr-export">导出CSV</button>',
+      '<button type="button" id="dcinput-hdr-close" class="dc-sub">关闭</button>',
+      '</div></div>'
+    ].join('');
+    document.body.appendChild(mask);
+    $('dcinput-hdr-text').value = csvText.replace(/\r\n/g, '\n');
     try {
-      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text);
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(csvText);
     } catch (e) {}
-    prompt('本页字段名（可作 CSV 表头）。查询项带请选择：', text);
-    setStatus('已列出 ' + header.length + ' 个 name');
+    function onExport() {
+      downloadCsv(filename, csvText);
+      setStatus('已导出 ' + filename + '（' + fields.length + ' 列）');
+    }
+    function onCopy() {
+      var t = $('dcinput-hdr-text').value;
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t);
+      } catch (e1) {}
+      try { $('dcinput-hdr-text').select(); } catch (e2) {}
+      setStatus('已复制 ' + fields.length + ' 列');
+    }
+    function onKey(ev) {
+      if (ev.key === 'Escape') {
+        ev.preventDefault();
+        close();
+      }
+    }
+    function close() {
+      document.removeEventListener('keydown', onKey, true);
+      closeHeaderDlg();
+    }
+    $('dcinput-hdr-export').addEventListener('click', onExport);
+    $('dcinput-hdr-copy').addEventListener('click', onCopy);
+    $('dcinput-hdr-close').addEventListener('click', close);
+    mask.addEventListener('click', function (ev) {
+      if (ev.target === mask) close();
+    });
+    $('dcinput-hdr-dlg').addEventListener('click', function (ev) { ev.stopPropagation(); });
+    document.addEventListener('keydown', onKey, true);
+  }
+  function copyPageNames() {
+    var fields = collectPageFields();
+    if (!fields.length) {
+      setStatus('当前页没有可导出的字段，请先打开详情弹窗');
+      return;
+    }
+    showHeaderDlg(fields);
+    setStatus('已列出 ' + fields.length + ' 个字段');
   }
 
   /* ---------- panel ---------- */
@@ -1332,7 +1528,7 @@
     $('dcinput-name').textContent = previewName(row) + markTxt;
     $('dcinput-meta').textContent = row
       ? ('成功 ' + okN + ' · 未记 ' + (n - okN))
-      : (state.encoding ? ('编码 ' + state.encoding) : '导入 CSV（列名=网页 name）');
+      : (state.encoding ? ('编码 ' + state.encoding) : '导入 CSV（列名=网页 name 或 label）');
     var qhtml = '';
     var i, st, lamp;
     for (i = 0; i < state.queryStatus.length; i++) {
@@ -1421,7 +1617,15 @@
       '.dc-q{display:flex;justify-content:space-between;gap:6px;padding:1px 0;border-bottom:1px dashed #2a3f52;font-size:11px}',
       '.dc-q span{color:#f6d98a}',
       '#dcinput-panel .dc-foot{display:flex;justify-content:space-between;align-items:center;gap:4px;margin:2px 0 0;color:#7a90a4;font-size:11px}',
-      '#dcinput-hide{position:fixed;bottom:10px;left:10px;z-index:2147483646;display:none;background:#2c7a75;color:#fff;border:0;border-radius:4px;padding:5px 8px;cursor:pointer;font-size:12px}'
+      '#dcinput-hide{position:fixed;bottom:10px;left:10px;z-index:2147483646;display:none;background:#2c7a75;color:#fff;border:0;border-radius:4px;padding:5px 8px;cursor:pointer;font-size:12px}',
+      '#dcinput-hdr-mask{position:fixed;left:0;top:0;right:0;bottom:0;z-index:2147483647;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center}',
+      '#dcinput-hdr-dlg{width:560px;max-width:92vw;background:#1b2838;color:#e8eef5;border:1px solid #3d5a73;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.45);padding:10px 12px 12px;font:12px/1.4 "Microsoft YaHei",sans-serif}',
+      '#dcinput-hdr-dlg h2{margin:0 0 6px;font-size:14px;color:#7fd4cf}',
+      '#dcinput-hdr-dlg .dc-hdr-hint{margin:0 0 6px;color:#9bb0c3;font-size:11px}',
+      '#dcinput-hdr-text{width:100%;height:88px;resize:vertical;background:#0f1a24;color:#e8eef5;border:1px solid #3d5a73;border-radius:4px;padding:6px;font:12px/1.4 Consolas,monospace;box-sizing:border-box}',
+      '#dcinput-hdr-dlg .dc-hdr-btns{display:flex;gap:6px;margin-top:8px;justify-content:flex-end}',
+      '#dcinput-hdr-dlg button{background:#2c7a75;color:#fff;border:0;border-radius:3px;padding:4px 10px;cursor:pointer;font-size:12px}',
+      '#dcinput-hdr-dlg button.dc-sub{background:#35536b}'
     ].join('');
     document.documentElement.appendChild(css);
   }
@@ -1435,11 +1639,11 @@
       '<button id="dcinput-min" class="dc-sub" type="button">收起</button></h1>',
       '<div class="dc-foot"><span id="dcinput-counter">0 / 0</span></div>',
       '<div id="dcinput-name">（未导入）</div>',
-      '<div id="dcinput-meta">列名=网页 name</div>',
+      '<div id="dcinput-meta">列名=网页 name 或 label</div>',
       '<div class="dc-row">',
       '<label class="dc-btn dc-sub">选择CSV<input id="dcinput-file" type="file" accept=".csv,text/csv,text/plain" style="display:none"></label>',
       '<button id="dcinput-paste" type="button">粘贴Excel</button>',
-      '<button id="dcinput-names" class="dc-sub" type="button">复制name</button>',
+      '<button id="dcinput-names" class="dc-sub" type="button">复制表头</button>',
       '<button id="dcinput-prev" class="dc-sub" type="button">上一条</button>',
       '</div>',
       '<div class="dc-row">',
@@ -1461,7 +1665,7 @@
       if (e.target.files && e.target.files[0]) onFile(e.target.files[0]);
     });
     $('dcinput-paste').addEventListener('click', function () {
-      var t = prompt('从 Excel 复制后粘贴（含表头，表头=网页 name）：');
+      var t = prompt('从 Excel 复制后粘贴（含表头，表头=网页 name 或显示名 label）：');
       if (t) applyImported(t, 'paste-unicode', 'paste');
     });
     $('dcinput-names').addEventListener('click', copyPageNames);
@@ -1508,7 +1712,7 @@
             state.visible = true;
           } else buildPanel();
         });
-        GM_registerMenuCommand('复制本页 name', copyPageNames);
+        GM_registerMenuCommand('复制本页表头', copyPageNames);
       }
     } catch (e) {}
   }
